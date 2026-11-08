@@ -6,105 +6,74 @@ Tarea complementaria de Programacion II.
 
 ## Descripcion
 
-Sistema para administrar la consulta de un centro medico: se registran los
-pacientes y los medicos, se agendan las citas, y de cada cita atendida queda una
-consulta con sus diagnosticos y sus recetas.
+Sistema para la consulta de un centro medico. Se registran pacientes y medicos,
+se agendan citas, y de cada cita atendida queda una consulta con sus
+diagnosticos y recetas.
 
-El backend es un API REST en ASP.NET Core separado en capas, y el frontend es
-una aplicacion de React que lo consume.
+El backend es un API en ASP.NET Core dividido en capas y el frontend es una
+aplicacion de React que lo consume.
 
 ## Tablas
 
-| Tabla | Descripcion |
-|-------|-------------|
-| Especialidades | Las especialidades medicas del centro. |
-| Medicos | Cada medico pertenece a una especialidad. |
-| Seguros | Las ARS con las que trabaja el centro. |
-| Pacientes | Los pacientes. Pueden tener un seguro o ser privados. |
-| Consultorios | Los consultorios disponibles. |
-| Citas | Reserva de un paciente con un medico en un consultorio. |
-| Consultas | Lo que ocurrio en una cita atendida. |
-| Diagnosticos | Los diagnosticos de una consulta. |
-| Medicamentos | Los medicamentos que se pueden recetar. |
-| Recetas | El medicamento recetado en una consulta, con su dosis. |
+Especialidades, Medicos, Seguros, Pacientes, Consultorios, Citas, Consultas,
+Diagnosticos, Medicamentos y Recetas.
 
 ## Tecnologias
 
 - ASP.NET Core 8 Web API
-- Entity Framework Core 8 con migraciones
+- Entity Framework Core 8 (Code First)
 - SQL Server 2022
 - React 19 con Vite
-- Swagger / OpenAPI
+- Swagger
 
-## Arquitectura
+## Estructura
 
 ```
-SistemaPacientes.Domain/              Capa de dominio
-├── Core/BaseEntity.cs
-└── Entities/                         Las 10 entidades
+SistemaPacientes.Domain/
+  Core/BaseEntity.cs
+  Entities/            Las 10 entidades
 
-SistemaPacientes.Infrastructure/      Capa de acceso a datos
-├── Context/ApplicationDbContext.cs
-├── Contracts/                        Interfaces de los repositorios
-├── Migrations/
-└── Repositories/                     Implementaciones y unidad de trabajo
+SistemaPacientes.Infrastructure/
+  Context/             ApplicationDbContext
+  Contracts/           Interfaces de los repositorios
+  Migrations/
+  Repositories/        Implementaciones y UnitOfWork
 
-SistemaPacientes.Application/         Capa de servicios
-├── Core/ApiResponse.cs
-├── Contracts/                        Interfaces de los servicios
-├── Dtos/
-└── Services/                         Un servicio por recurso
+SistemaPacientes.Application/
+  Core/ApiResponse.cs
+  Contracts/           Interfaces de los servicios
+  Dtos/
+  Services/            Un servicio por recurso
 
-SistemaPacientes.API/                 Capa de presentacion
-└── Controllers/                      Un controlador por recurso
+SistemaPacientes.API/
+  Controllers/         Un controlador por recurso
 
-client-react/                         Frontend que consume el API
+client-react/          Frontend
 ```
 
-Cada proyecto referencia solo al siguiente: API, Application, Infrastructure y
-Domain en ese orden.
+Cada proyecto referencia solo al siguiente: API, Application, Infrastructure,
+Domain.
 
-### Sobre las interfaces
+Los repositorios y los servicios se registran por su interfaz, asi que el
+controlador recibe `IPacienteService` y el servicio recibe `IUnitOfWork` sin
+saber cual es la implementacion.
 
-Tanto los repositorios como los servicios se registran por su interfaz. El
-controlador recibe `IPacienteService` y no sabe cual es la implementacion, y el
-servicio recibe `IUnitOfWork` y no sabe como se guardan los datos. Eso permite
-cambiar una pieza sin tocar las demas.
-
-### Sobre la unidad de trabajo
-
-Los repositorios agregan, actualizan y eliminan, pero no guardan. Quien guarda es
-`UnitOfWork.Complete()`. Asi se pueden encadenar varias operaciones y deshacerlas
-todas si una falla: al registrar una consulta se crea la consulta y ademas se
-marca la cita como atendida, y las dos cosas entran juntas o no entra ninguna.
-
-## Reglas de negocio
-
-- La cedula del paciente no se puede repetir.
-- La fecha de nacimiento no puede ser futura ni mayor a 120 anios.
-- El sexo del paciente debe ser M o F.
-- El exequatur del medico no se puede repetir.
-- Un medico no puede tener dos citas a la misma hora.
-- Un consultorio no puede estar ocupado por dos citas a la misma hora.
-- No se puede registrar una consulta de una cita cancelada.
-- Una cita no puede tener mas de una consulta.
-- Al registrar la consulta, la cita pasa a estado Atendida.
-- No se puede eliminar un paciente o un medico que tenga citas.
-- No se puede eliminar una consulta que tenga diagnosticos o recetas.
+La unidad de trabajo es la unica que guarda. Eso permite encadenar operaciones:
+al registrar una consulta se crea la consulta y se marca la cita como atendida,
+y las dos cosas entran juntas o no entra ninguna.
 
 ## Como ejecutar
 
-### 1. Base de datos
+1. En `SistemaPacientes.API/appsettings.Development.json` sustituir
+   `TU_PASSWORD` por la clave de SQL Server.
 
-Levantar SQL Server y poner la clave en
-`SistemaPacientes.API/appsettings.Development.json`, donde dice `TU_PASSWORD`.
-Luego crear la base con la migracion:
+2. Crear la base de datos:
 
 ```bash
 dotnet ef database update --project SistemaPacientes.Infrastructure --startup-project SistemaPacientes.API
 ```
 
-### 2. API
+3. Levantar el API:
 
 ```bash
 dotnet run --project SistemaPacientes.API
@@ -112,7 +81,7 @@ dotnet run --project SistemaPacientes.API
 
 Queda en `http://localhost:5210` y Swagger en `/swagger`.
 
-### 3. Frontend
+4. Levantar el cliente:
 
 ```bash
 cd client-react
@@ -121,22 +90,31 @@ npm run dev
 ```
 
 Queda en `http://localhost:5173`. La direccion del API se configura en el
-archivo `.env` del cliente.
-
-El API habilita CORS unicamente para `http://localhost:5173`, que es el puerto
-donde Vite levanta el cliente.
+archivo `.env`. El API solo acepta peticiones desde ese puerto.
 
 ## Endpoints
 
-Los diez recursos exponen el mismo CRUD:
+Los diez recursos tienen el mismo CRUD:
 
-| Metodo | Ruta | Respuesta |
-|--------|------|-----------|
-| GET | /api/{recurso} | 200 lista |
-| GET | /api/{recurso}/{id} | 200 o 404 |
-| POST | /api/{recurso} | 201 + Location |
-| PUT | /api/{recurso}/{id} | 204, 400 o 404 |
-| DELETE | /api/{recurso}/{id} | 204, 400 o 404 |
+```
+GET    /api/{recurso}
+GET    /api/{recurso}/{id}
+POST   /api/{recurso}
+PUT    /api/{recurso}/{id}
+DELETE /api/{recurso}/{id}
+```
 
 Recursos: `pacientes`, `medicos`, `citas`, `consultas`, `diagnosticos`,
 `recetas`, `especialidades`, `seguros`, `consultorios`, `medicamentos`.
+
+## Validaciones
+
+- La cedula del paciente y el exequatur del medico no se repiten.
+- La fecha de nacimiento no puede ser futura ni mayor a 120 anios.
+- El sexo del paciente debe ser M o F.
+- Un medico no puede tener dos citas a la misma hora, ni un consultorio estar
+  ocupado dos veces.
+- No se puede registrar una consulta de una cita cancelada, ni mas de una
+  consulta por cita.
+- No se puede eliminar un paciente o un medico que tenga citas, ni una consulta
+  que tenga diagnosticos o recetas.
