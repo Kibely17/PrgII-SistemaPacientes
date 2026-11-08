@@ -1,0 +1,161 @@
+:root {
+  font-family: system-ui, "Segoe UI", Arial, sans-serif;
+  color: #1f2933;
+  background-color: #f4f6f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.aplicacion {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+header h1 {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #d9e0e6;
+  padding-bottom: 12px;
+}
+
+nav button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #425466;
+}
+
+nav button:hover {
+  background: #e8edf1;
+}
+
+nav button.activo {
+  background: #1f6feb;
+  color: #fff;
+}
+
+h2 {
+  font-size: 19px;
+  margin: 0 0 16px;
+}
+
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e1e7ec;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.formulario label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 4px;
+}
+
+.formulario input,
+.formulario select {
+  padding: 7px 9px;
+  border: 1px solid #cbd5dd;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 5px;
+  background: #1f6feb;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button.secundario {
+  background: #6b7a8c;
+}
+
+button.peligro {
+  background: #c23b3b;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #e1e7ec;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid #edf1f4;
+}
+
+th {
+  background: #eef2f5;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.celda-acciones {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.celda-acciones button {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.error {
+  background: #fdeaea;
+  border: 1px solid #f0bcbc;
+  color: #9c2a2a;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
